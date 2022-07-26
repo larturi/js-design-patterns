@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Observer</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+</head>
+
+<body>
+
+    <input type="text" id="myText" oninput="change()" placeholder="Ingresar texto">
+
+    <div class="container">
+        <span>Mayusculas:</span>
+        <div id="div1"></div>
+    </div>
+
+    <div class="container">
+        <span>Largo:</span>
+        <div id="div2"></div>
+    </div>
+
+    <div class="container">
+        <span>Reverse:</span>
+        <div id="div3"></div>
+    </div>
+
+    <script src='observer.js'></script>
+</body>
+
+</html>
+
+<style>
+    input[type=text] {
+        width: 30%;
+        padding: 12px 10px;
+        margin: 8px 0;
+        box-sizing: border-box;
+        display: block;
+    }
+    
+    span {
+        display: inline;
+    }
+    
+    div {
+        width: 100%;
+        margin: 1rem 0;
+        display: inline;
+    }
+    
+    .container {
+        display: block;
+    }
+</style>
