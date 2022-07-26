@@ -1,61 +1,91 @@
-interface Strategy {
-    login(user: string, password: string): boolean;
-}
+namespace ObserverNameSpace {
 
-class LoginContext {
-    private strategy: Strategy;
-   
-    constructor(strategy: Strategy) {
-        this.strategy = strategy;
+    interface IObserver<T> {
+        refresh(value: T): void;
     }
 
-    setStrategy(strategy: Strategy) {
-        this.strategy = strategy;
+    interface ISubject<T> {
+        observers: IObserver<T>[];
+
+        subscribe(observer: IObserver<T>) : void;
+        unsubscribe(observer: IObserver<T>) : void;
+        notify(value: T) : void;
     }
 
-    login(user: string, password: string): boolean {
-        return this.strategy.login(user, password);
-    }
-}
+    class Subject<T> implements ISubject<T> {
+        observers: IObserver<T>[];
 
-class LoginDBStrategy implements Strategy {
-    login(user: string, password: string): boolean {
-        console.log("Nos dirigimos a la BD")
-        if(user === "admin" && password === "123456") {
-            return true;
+        constructor() {
+            this.observers = [];
         }
-        return false;
-    }
-}
 
-class LoginServiceStrategy implements Strategy {
-    login(user: string, password: string): boolean {
-        console.log("Nos dirigimos al servicio de autenticación")
-        if(user === "admin" && password === "asdf") {
-            return true;
+        subscribe(observer: IObserver<T>) : void {
+            this.observers.push(observer);
+        };
+
+        unsubscribe(observer: IObserver<T>) : void {
+            this.observers = this.observers.filter(obs => observer !== obs);
+        };
+
+        notify(value: T) : void {
+            this.observers.forEach(e => {
+                e.refresh(value);
+            })
+        };
+    }
+
+    class Observer<T> implements IObserver<T> {
+        private fn: (value: T) => void;
+
+        constructor(fn: (value: T) => void) {
+            this.fn = fn;
         }
-        return false;
-    }
-}
 
-class LoginGoogleStrategy implements Strategy {
-    login(user: string, password: string): boolean {
-        console.log("Nos dirigimos al servicio de Google")
-        if(user === "admin" && password === "google") {
-            return true;
+        refresh(value: T): void {
+            this.fn(value);
         }
-        return false;
     }
+
+    function factorial(n: number): number { 
+        if (n == 0){ 
+            return 1; 
+        }
+        return n * factorial (n-1); 
+    }
+
+    // Numbers
+
+    const subjectNumber = new Subject<number>();
+
+    const obs1 = new Observer<number>((n) => {
+        console.log(`El cuadrado de ${n} es: ${n * n}`);
+    });
+
+    const obs2 = new Observer<number>((n) => {
+        console.log(`El factorial de ${n} es: ${factorial(n)}`);
+    });
+
+    subjectNumber.subscribe(obs1);
+    subjectNumber.subscribe(obs2);
+
+    subjectNumber.notify(4);
+    subjectNumber.notify(5);
+
+    // Strings
+
+    const subjectString = new Subject<string>();
+
+    const obs3 = new Observer<string>((userName) => {
+        console.log(`Bienvenido ${userName}!`);
+    });
+
+    const obs4 = new Observer<string>((userName) => {
+        console.log(`Nombre en mayusculas: ${userName.toUpperCase()}`);
+    });
+
+    subjectString.subscribe(obs3);
+    subjectString.subscribe(obs4);
+    subjectString.notify("Leandro");
+
+
 }
-
-const auth = new LoginContext(new LoginDBStrategy());
-let respuesta = auth.login("admin", "123456");
-console.log(respuesta);
-
-auth.setStrategy(new LoginServiceStrategy());
-respuesta = auth.login("admin", "2222");
-console.log(respuesta);
-
-auth.setStrategy(new LoginGoogleStrategy());
-respuesta = auth.login("admin", "google");
-console.log(respuesta);
