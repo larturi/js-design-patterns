@@ -1,93 +1,164 @@
-namespace DecoratorNameSpace {
-
-    interface Component{
-        getDetail() : string;
-    }
-
-    class ProductComponent implements Component {
-        protected name: string;
-
-        constructor(name: string){
-            this.name = name;
-        }
-
-        public getDetail(): string {
-            return `${this.name}`;
-        }
-    }
-
-    abstract class ProductDecorator implements Component{
-        protected component: Component;
-
-        constructor(component: Component){
-            this.component = component;
-        }
-
-        getDetail(){
-            return this.component.getDetail();
-        }
-    }
-
-    class CommercialInfoProductDecorator extends ProductDecorator{
-
-        private tradename: string;
-        private brand: string;
-
-        constructor(component: Component, tradename: string, brand: string){
-            super(component);
-            
-            this.tradename = tradename;
-            this.brand = brand;
-            
-        }
-
-        getDetail(): string{
-            return `${super.getDetail()} ${this.tradename} ${this.brand}`;
-        }
-    }
-
-
-    class StoreProductDecorator extends ProductDecorator{
-        private price: number;
-
-        constructor(component: Component, price: number){
-            super(component);
-            this.price = price;
-        }
-
-        getDetail(): string{
-            return super.getDetail() + ` $${this.price}`;
-        }
-    }
-
-    class HTMLProductDecorator extends ProductDecorator{
-        getDetail() : string{
-            return `<h1>Información del producto</h1><p>${super.getDetail()}</p>`;
-        }
-    }
-
-    // Ejecución
-
-    // Component
-    const productComponent = new ProductComponent("Cerveza");
-    console.log(productComponent.getDetail());
-
-    // Decorator 1 con Component
-    const commercialInfoProduct = 
-        new CommercialInfoProductDecorator(productComponent, "Patagonia", "1L");
-    console.log(commercialInfoProduct.getDetail());
-
-    // Decorator 2 con Component
-    const storeProduct = new StoreProductDecorator(productComponent, 15.5);
-    console.log(storeProduct.getDetail());
-
-    // Decorator 2 con Decorator 1
-    const storeProduct2 = new StoreProductDecorator(commercialInfoProduct, 15.5);
-    console.log(storeProduct2.getDetail());
-
-    // Decorator 3 con Decorator 2 con Decorator 1
-    const htmlProductDecorator = new HTMLProductDecorator(storeProduct2);
-    console.log(htmlProductDecorator.getDetail());
+namespace BuilderNameSpace {
         
+    class Person{
+        private name: string;
+        private lastName: string;
+        private age: number;
+        private country: string;
+        private city: string;
+        private hobbies: string[];
+
+        constructor(
+            name: string, 
+            lastName:string, 
+            age: number, 
+            country: string, 
+            city: string, 
+            hobbies: string[]) {
+                this.name= name;
+                this.lastName= lastName;
+                this.age = age;
+                this.country= country;
+                this.city = city;
+                this.hobbies = hobbies;
+        }
+
+        getFullName(): string{
+            return this.name + " " + this.lastName;
+        }
+
+        getFullPerson(): Person {
+            return this;
+        }
+    }
+
+    // Interface Builder
+    interface PersonBuilder {
+        name: string;
+        lastName: string;
+        age: number;
+        country: string;
+        city: string;
+        hobbies: string[];
+
+        setName(name: string): PersonBuilder;
+        setLastName(lastName: string): PersonBuilder;
+        setAge(age: number): PersonBuilder;
+        setCountry(country: string): PersonBuilder;
+        setCity(city: string): PersonBuilder;
+        addHobby(hobby: string): PersonBuilder;
+        build(): Person;
+    }
+
+    // Concrete Builder
+    class NormalPersonBuilder implements PersonBuilder {
+        name: string = "";
+        lastName: string = "";
+        age: number = 0;
+        country: string = "";
+        city: string = "";
+        hobbies: string[] = [];
+
+        constructor() {
+            this.reset();
+        }
+
+        reset(): void{
+            this.name = "";
+            this.lastName = "";
+            this.age = 0;
+            this.country = "";
+            this.city = "";
+            this.hobbies = [];
+        }
+
+        setName(name: string): PersonBuilder{
+            this.name = name;
+            return this;
+        }
+
+        setLastName(lastName: string): PersonBuilder{
+            this.lastName = lastName;
+            return this;
+        }
+
+        setAge(age: number): PersonBuilder{
+            this.age = age;
+            return this;
+        }
+
+        setCountry(country: string): PersonBuilder{
+            this.country = country;
+            return this;
+        }
+        setCity(city: string): PersonBuilder{
+            this.city = city;
+            return this;
+        }
+
+        addHobby(hobby: string): PersonBuilder{
+            this.hobbies.push(hobby);
+            return this;
+        }
+
+        build(): Person{
+            const person = new Person(
+                this.name,
+                this.lastName,
+                this.age,
+                this.country,
+                this.city,
+                this.hobbies
+            );
+            this.reset();
+            return person;
+        }
+    }
+
+    // Director
+    class PersonDirector {
+        private personBuilder: PersonBuilder;
+
+        constructor(personBuilder: PersonBuilder) {
+            this.personBuilder = personBuilder;
+        }
+
+        setPersonBuilder(personBuilder: PersonBuilder) {
+            this.personBuilder = personBuilder;
+        }
+
+        createSimplePerson(name: string, lastName: string) {
+            this.personBuilder.setName(name).setLastName(lastName);
+        }
+    }
+
+    // Creación 1
+    const personBuilder = new NormalPersonBuilder();
+
+    const leandro = personBuilder.setName("Leandro")
+                                 .setLastName("Arturi")
+                                 .setCity("CABA")
+                                    .addHobby("Ver series")
+                                    .addHobby("Jugar futbol")
+                                    .addHobby("Comer")
+                                 .build();
+    console.log(leandro);
+
+    // Creación 2
+    const cande = personBuilder.setName("Candelaria")
+                            .setLastName("Arturi")
+                            .setAge(6)
+                            .setCountry("Argentina")
+                            .setCity("CABA")
+                                .addHobby("Comer Pizza")
+                                .addHobby("Bailar")
+                            .build();
+    console.log(cande);
+
+    // Creación con director
+    const director = new PersonDirector(personBuilder);
+    director.createSimplePerson("Lichi", "Arturi");
+    const lichi = personBuilder.build();
+    console.log(lichi);
 
 }
